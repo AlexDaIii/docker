@@ -7,4 +7,4 @@ ADD https://github.com/checkstyle/checkstyle/releases/download/checkstyle-8.42/c
 
 ADD https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml /root/checkstyle/
 
-RUN echo 'alias checkstyle="java -jar /root/checkstyle/checkstyle-8.42-all.jar -c /root/checkstyle/google_checks.xml"' >> ~/.bashrc
+RUN echo 'alias checkstyle="java -jar /root/checkstyle/checkstyle-8.42-all.jar"' >> ~/.bashrc
