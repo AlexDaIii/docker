@@ -1,3 +1,2 @@
-FROM node:alpine
-RUN apk add git
+FROM alexdaiii/node-dev
 RUN yarn global add gatsby-cli
