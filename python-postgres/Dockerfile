@@ -18,10 +18,6 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive
 # [Optional] Uncomment this line to install global node packages.
 # RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1
 
-# Create user and set ownership and permissions as the user defined at buildtime
-# RUN addgroup --gid $GROUP_ID ${USERNAME}
-# RUN adduser --disabled-password --gecos '' --uid ${USER_ID} --gid ${GROUP_ID} ${USERNAME}
-
 USER vscode
 
 ARG vscode_server=/home/vscode/.vscode-server
