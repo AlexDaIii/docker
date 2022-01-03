@@ -1,0 +1,42 @@
+version: "3"
+
+volumes:
+
+  vscode_server: null
+  postgres: null
+
+services:
+  python:
+    # NOTE: if you already built this, just use the already built image
+    build:
+      # NOTE: change to where the Dockerfile for java dev container is located
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - INSTALL_MAVEN=${INSTALL_MAVEN:-false}
+        - MAVEN_VERSION=${MAVEN_VERSION}
+        - INSTALL_GRADLE=${INSTALL_GRADLE:-false}
+        - GRADLE_VERSION=${GRADLE_VERSION}
+    image: java-dev
+    # Seems to be needed so container persists
+    stdin_open: true
+    tty: true
+    volumes:
+      - vscode_server:/home/vscode/.vscode-server
+      # NOTE: change to where the code for java dev container is located
+      - .:/home/vscode/${WORKDIR:-code}
+    ports:
+      - ${REST_PORT:-8000}:8000
+
+  db:
+    image: bitnami/postgresql
+    volumes:
+      - postgres:/bitnami/postgresql
+      - ./db/init:/docker-entrypoint-initdb.d
+      - ./db/preinit:/docker-entrypoint-preinitdb.d
+    environment:
+      POSTGRESQL_DATABASE: ${POSTGRES_DEF_DB:-postgres}
+      POSTGRESQL_USERNAME: ${POSTGRES_USERNAME:-postgres}
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - ${PG_HOST_PORT:-5432}:5432

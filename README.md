@@ -1,4 +1,5 @@
-# docker
-Docker images - mostly dev environments for VS Code containers
+# Starter Templates
 
-Go to [@alexdaiii-docker](https://github.com/alexdaiii-docker) to get the link to the images that ultimately get built on Dockerhub.
+This contains starter Dockerfiles and Docker Compose files for development. They are based on the [Microsoft VSCode Remote Dockerfiles](https://github.com/microsoft/vscode-dev-containers/tree/main/containers/).
+
+These containers assume you are on a Linux host with a user id of 1000
