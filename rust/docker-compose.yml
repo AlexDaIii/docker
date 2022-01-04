@@ -1,0 +1,23 @@
+version: "3"
+
+volumes:
+
+  vscode_server: null
+
+services:
+  rust:
+    # NOTE: if you already built this, just use the already built image
+    build:
+      # NOTE: change to where the Dockerfile for python dev container is located
+      context: .
+      dockerfile: Dockerfile
+    image: rust-dev
+    # Seems to be needed so container persists
+    stdin_open: true
+    tty: true
+    volumes:
+      - vscode_server:/home/vscode/.vscode-server
+      # NOTE: change to where the code for python dev container is located
+      - .:/home/vscode/${WORKDIR:-code}
+    ports:
+      - ${REST_PORT:-8000}:8000
