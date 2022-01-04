@@ -6,7 +6,7 @@ volumes:
   postgres: null
 
 services:
-  python:
+  java:
     # NOTE: if you already built this, just use the already built image
     build:
       # NOTE: change to where the Dockerfile for java dev container is located
