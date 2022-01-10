@@ -1,0 +1,52 @@
+version: "3"
+
+volumes:
+
+  # vscode_server: null
+  # On Windows and MacOS hosts, you should use a volume mount for the jetbrains server
+  jetbrains:
+    external: true
+  # use this volume mount to store the host ssh keys so it doesn't regenerate every time its run
+  docker_ssh_keys:
+    external: true
+  python_install: null
+  postgres: null
+
+services:
+  python:
+    # NOTE: if you already built this, just use the already built image
+    build:
+      # NOTE: change to where the Dockerfile for python dev container is located
+      context: .
+      dockerfile: Dockerfile
+    image: python-dev-ssh
+    # Seems to be needed so container persists
+    stdin_open: true
+    tty: true
+    volumes:
+      # - vscode_server:/home/vscode/.vscode-server
+      - python_install:/home/vscode/.local
+      # NOTE: change to where the code for python dev container is located
+      - .:/home/vscode/${WORKDIR:-code}
+      - jetbrains:/home/vscode/.cache/JetBrains
+      ## On Linux hosts, you can just bind mount it to this dir on the host
+      # - ~/.cache/JetBrains:/home/vscode/.cache/JetBrains
+      - docker_ssh_keys:/etc/ssh
+    environment:
+      - SSH_KEY: ${SSH_KEY}
+    ports:
+      - ${REST_PORT:-8000}:8000
+      - ${SSH_PORT:-2222}:22
+
+  db:
+    image: bitnami/postgresql
+    volumes:
+      - postgres:/bitnami/postgresql
+      - ./db/init:/docker-entrypoint-initdb.d
+      - ./db/preinit:/docker-entrypoint-preinitdb.d
+    environment:
+      POSTGRESQL_DATABASE: ${POSTGRES_DEF_DB:-postgres}
+      POSTGRESQL_USERNAME: ${POSTGRES_USERNAME:-postgres}
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - ${PG_HOST_PORT:-5432}:5432
