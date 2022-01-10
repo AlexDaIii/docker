@@ -22,7 +22,6 @@ EXPOSE 22
 ARG USERNAME=vscode
 
 # Uncomment this part out if you need to setup another user
-# NOTE: if you do this you will need to change the user in config.sh
 # ARG USER_UID=1000
 # ARG USER_GID=$USER_UID
 # RUN addgroup --gid $GROUP_ID ${USERNAME} \
@@ -32,7 +31,11 @@ ARG USERNAME=vscode
 ARG HOME_DIR=/home/${USERNAME}
 ARG VSCODE_REMOTE=${HOME_DIR}/.vscode-server
 ARG PYTHON_INSTALL=${HOME_DIR}/.local
-ARG JETBRAINS_REMOTE=${HOME_DIR}/.cache/Jetbrains
+ARG JETBRAINS_CACHE=${HOME_DIR}/.cache/JetBrains
+ARG JETBRAINS_CONFIG=${HOME_DIR}/.config/JetBrains
+ARG JETBRAINS_LOCAL=${HOME_DIR}/.local/share/JetBrains
+
+# this is used in config to setup the ssh key
 ENV CONTAINER_USERNAME=${USERNAME}
 
 COPY sshconfig/config.sh /config.sh
@@ -43,17 +46,22 @@ RUN mkdir -p ${VSCODE_REMOTE} \
     && chown -R ${USERNAME} ${VSCODE_REMOTE} \
     && mkdir -p ${PYTHON_INSTALL} \
     && chown -R ${USERNAME} ${PYTHON_INSTALL} \ 
-    && mkdir -p ${JETBRAINS_REMOTE} \
-    && chown -R ${USERNAME} ${JETBRAINS_REMOTE} \
+    && mkdir -p ${JETBRAINS_CACHE} \
+    && chown -R ${USERNAME} ${JETBRAINS_CACHE} \
+    && mkdir -p ${JETBRAINS_CONFIG} \
+    && chown -R ${USERNAME} ${JETBRAINS_CONFIG} \
+    && mkdir -p ${JETBRAINS_LOCAL} \
+    && chown -R ${USERNAME} ${JETBRAINS_LOCAL} \
     && chmod +x /*.sh
 
+# update the debian container then install openssh, sudo, and gpg
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends openssh-server sudo
-
-# make a dir for the sshdemon
-# delete the pregenerated host keys so they are not stored with the image
-RUN mkdir -p /var/run/sshd \
+    && apt-get -y install --no-install-recommends openssh-server sudo \
+    && sudo apt-get install gnupg2 -y \
     && /bin/rm -v /etc/ssh/ssh_host_*
+# delete the pregenerated host keys so they are not stored with the image or in any layer
+
+RUN mkdir -p /var/run/sshd 
 # copy the ssh config file 
 COPY sshconfig/sshd_config /etc/ssh/sshd_config
 COPY sshconfig/sshd_config_original /etc/ssh/sshd_config_original
@@ -61,5 +69,5 @@ COPY sshconfig/sshd_config_original /etc/ssh/sshd_config_original
 USER ${USERNAME}
 
 # WORKDIR /home/vscode
-# run the run.sh file, keeping the env vars from the current user
+# run the run.sh file, keeping the env varibles
 CMD ["sudo", "-E", "bash", "/run.sh"]

@@ -1,0 +1,82 @@
+version: "3"
+
+volumes:
+
+  # On Windows and MacOS hosts, these are the reccomended volumes
+  jetbrains_config:
+    external: true
+  jetbrains_cache:
+    external: true
+  jetbrains_extensions:
+    external: true
+
+  # Python install locations
+  python_bin: null
+  python_include: null
+  python_lib: null
+
+  # use this volume mount to store the host ssh keys so it doesn't regenerate every time its run
+  docker_ssh_keys:
+    external: true
+
+  # persist the postgres data
+  postgres: null
+
+services:
+  python:
+    # NOTE: if you already built this, just use the already built image
+    build:
+      # NOTE: change to where the Dockerfile for python dev container is located
+      context: .
+      dockerfile: Dockerfile
+    image: python-dev-ssh
+    # Seems to be needed so container persists
+    stdin_open: true
+    tty: true
+    # It is highly reccomended to limit this container's resources
+    cpus: 0.5
+    mem_limit: 4096M
+    volumes:
+      # Location where the code will be mounted inside the container
+      - .:/home/vscode/${WORKDIR:-code}
+      - docker_ssh_keys:/etc/ssh
+      - python_bin:/home/vscode/.local/bin
+      - python_include:/home/vscode/.local/include
+      - python_lib:/home/vscode/.local/local
+
+      # For MacOS / Windows Hosts
+      # # this is where JetBrains stores system info and logs
+      - jetbrains_cache:/home/vscode/.cache/JetBrains
+      # this is where JetBrains store Configuration files
+      - jetbrains_config:/home/vscode/.config/JetBrains
+      # this is where JetBrains stores plugins
+      - jetbrains_extensions:/home/vscode/.local/share/JetBrains
+      #############################
+      ## For Linux Hosts
+      # # this is where JetBrains stores system info and logs
+      # - ~/.cache/JetBrains:/home/vscode/.cache/JetBrains
+      # # this is where JetBrains store Configuration files
+      # - ~/.config/JetBrains:/home/vscode/.config/JetBrains
+      # # this is where JetBrains stores plugins
+      # - ~/.local/share/JetBrains:/home/vscode/.local/share/JetBrains
+
+    environment:
+      # add your public ssh key
+      SSH_KEY: ${SSH_KEY:-value}
+    ports:
+      - ${REST_PORT:-8000}:8000
+      - ${SSH_PORT:-2222}:22
+
+  db:
+    image: bitnami/postgresql
+    volumes:
+      - postgres:/bitnami/postgresql
+      # docker will create 2 volumes if there is no mount at these locations
+      - ./db/init:/docker-entrypoint-initdb.d
+      - ./db/preinit:/docker-entrypoint-preinitdb.d
+    environment:
+      POSTGRESQL_DATABASE: ${POSTGRES_DEF_DB:-postgres}
+      POSTGRESQL_USERNAME: ${POSTGRES_USERNAME:-postgres}
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - ${PG_HOST_PORT:-5432}:5432
