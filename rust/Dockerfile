@@ -11,3 +11,5 @@ USER vscode
 ARG vscode_server=/home/vscode/.vscode-server
 RUN mkdir -p ${vscode_server} \
     && chown -R vscode ${vscode_server}
+
+CMD [ "sleep", "infinity" ]

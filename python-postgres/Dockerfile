@@ -27,3 +27,5 @@ RUN mkdir -p ${vscode_server} \
 ARG python_install=/home/vscode/.local
 RUN mkdir -p ${python_install} \
     && chown -R vscode ${python_install}
+
+CMD [ "sleep", "infinity" ]

@@ -14,9 +14,6 @@ services:
       context: .
       dockerfile: Dockerfile
     image: python-dev
-    # Seems to be needed so container persists
-    stdin_open: true
-    tty: true
     volumes:
       - vscode_server:/home/vscode/.vscode-server
       - python_install:/home/vscode/.local
@@ -24,6 +21,7 @@ services:
       - .:/home/vscode/${WORKDIR:-code}
     ports:
       - ${REST_PORT:-8000}:8000
+    init: true
 
   db:
     image: bitnami/postgresql

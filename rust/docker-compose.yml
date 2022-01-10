@@ -12,12 +12,10 @@ services:
       context: .
       dockerfile: Dockerfile
     image: rust-dev
-    # Seems to be needed so container persists
-    stdin_open: true
-    tty: true
     volumes:
       - vscode_server:/home/vscode/.vscode-server
       # NOTE: change to where the code for python dev container is located
       - .:/home/vscode/${WORKDIR:-code}
     ports:
       - ${REST_PORT:-8000}:8000
+    init: true
